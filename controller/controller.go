@@ -29,6 +29,7 @@ func queryStatus(ctx context.Context, b Backends, hash string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	defer r.Close()
 
 	return r.Next(), nil
 }
@@ -44,12 +45,14 @@ func createController(ctx context.Context, b Backends) error {
 }
 
 func controllerExists(ctx context.Context, b Backends) (bool, error) {
-	_, err := b.DB().QueryContext(ctx, "select * from migration_controller")
+	resp, err := b.DB().QueryContext(ctx, "select * from migration_controller")
 	if err != nil {
 		if strings.Contains(err.Error(), "doesn't exist") {
 			return false, nil
 		}
 		return false, err
 	}
+	defer resp.Close()
+
 	return true, nil
 }
